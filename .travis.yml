@@ -1,0 +1,30 @@
+language: generic
+sudo: required
+services:
+  - docker 
+
+before_install:
+  - docker build -t doggers/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true doggers/react-test npm test
+
+after_success:
+  - docker build -t doggers/multi-client ./client
+  - docker build -t doggers/multi-nginx ./nginx
+  - docker build -t doggers/multi-server ./server
+  - docker build -t doggers/multi-worker ./worker
+
+  # log in to the docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # take those images and push them to docker hub
+  - docker push doggers/multi-client 
+  - docker push doggers/multi-nginx
+  - docker push doggers/multi-server
+  - docker push doggers/multi-worker
+
+
+
+
+
+
